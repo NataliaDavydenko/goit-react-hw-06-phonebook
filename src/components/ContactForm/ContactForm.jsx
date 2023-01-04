@@ -4,10 +4,15 @@ import { InputName } from 'components/PhoneBook/InputName';
 import { InputTel } from 'components/PhoneBook/InputTel';
 import { LabelContact } from 'components/PhoneBook/LabelContact';
 import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { addContacts } from 'redux/phonebookSlice';
+import { nanoid } from 'nanoid';
 
-export const ContactForm = ({ onSubmit }) => {
+export const ContactForm = () => {
+  const contacts = useSelector(state => state.contacts);
   const [name, setName] = useState('');
   const [number, setNumber] = useState('');
+  const dispatch = useDispatch();
 
   const handleChange = e => {
     const { name, value } = e.currentTarget;
@@ -24,12 +29,20 @@ export const ContactForm = ({ onSubmit }) => {
     setNumber('');
   };
 
-  const clickOnBtnAdd = e => {
-    e.preventDefault();
-    onSubmit({ name, number });
-    reset();
+  const addContact = data => {
+    const id = nanoid();
+    data.id = id;
+    contacts.filter(contact => contact.name === data.name).length > 0
+      ? alert(`${name} is already in contacts.`)
+      : dispatch(addContacts({ name, number, id }));
   };
 
+  const clickOnBtnAdd = e => {
+    e.preventDefault();
+    addContact({ name, number });
+    reset();
+  };
+  
   return (
     <>
       <PhoneBook onSubmit={clickOnBtnAdd}>

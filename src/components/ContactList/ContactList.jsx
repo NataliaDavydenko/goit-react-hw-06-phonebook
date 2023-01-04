@@ -1,40 +1,48 @@
-import PropTypes from 'prop-types';
 import { ContactItem, Button, Contacts, ContactText} from './ContactList.styled';
+import { removeContacts } from 'redux/phonebookSlice';
+import { useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 
-export const ContactList = ({ contacts, onClickDelete }) => {
-  const BtnDelete = ({ onClickDelete, id }) => (
-    <Button type="button" onClick={onClickDelete} id={id}>
-      Delete
-    </Button>
-  );
+
+export const ContactList = () => {
+  const dispatch = useDispatch();
+  const contacts = useSelector(state => state.contacts);
+  const filter = useSelector(state => state.filter);
+  const normalizeFilter = filter.toLowerCase();
+   
+  const getVisibleContacts = () => {
+    if (filter !== '') {
+      return contacts.filter(({ name }) =>
+        name.toLowerCase().includes(normalizeFilter)
+      );
+    }
+    return contacts;
+  };
+
+  const visibleContacts = getVisibleContacts();
+      
+   const deleteContactById = contactId => {
+    dispatch(removeContacts(contactId));
+  };
 
   return (
     <Contacts>
-      {contacts.map(({ name, number, id }) => {
+      {visibleContacts.map(({ name, number, id }) => {
         return (
           <ContactItem key={id}>
             <ContactText>
               {name} : {number}
             </ContactText>
-            <BtnDelete
+            <Button
+              type='button'
               name="Delete"
-              onClickDelete={() => onClickDelete(id)}
-              id={id}
-            />
+              onClick={() => deleteContactById(id)}
+            >
+              Delete
+            </Button>
           </ContactItem>
         );
       })}
     </Contacts>
   );
-};
-
-ContactList.propTypes = {
-  onClickDelete: PropTypes.func.isRequired,
-  contacts: PropTypes.arrayOf(
-    PropTypes.exact({
-      name: PropTypes.string.isRequired,
-      number: PropTypes.string.isRequired,
-      id: PropTypes.string.isRequired,
-    })
-  ),
 };
